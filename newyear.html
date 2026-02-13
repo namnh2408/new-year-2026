@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chúc Mừng Năm Mới 2026</title>
+    <style>
+        /* Cấu hình cơ bản cho trang web */
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden; /* Ẩn thanh cuộn */
+            background-color: #000; /* Nền đen để pháo hoa nổi bật */
+            font-family: 'Arial', sans-serif;
+            color: #fff;
+            display: flex;
+            justify-content: center; /* Căn giữa theo chiều ngang */
+            align-items: center; /* Căn giữa theo chiều dọc */
+            height: 100vh; /* Chiều cao bằng 100% màn hình */
+        }
+
+        /* Canvas cho hiệu ứng pháo hoa */
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1; /* Nằm dưới text */
+        }
+
+        /* Container chứa nội dung (đồng hồ, lời chúc) */
+        .content {
+            position: relative;
+            z-index: 2; /* Nằm trên canvas */
+            text-align: center;
+        }
+
+        /* Đồng hồ đếm ngược */
+        #countdown {
+            font-size: 5rem;
+            font-weight: bold;
+            display: flex;
+            gap: 20px;
+        }
+
+        .time-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .time-box span {
+            font-size: 1.5rem;
+            font-weight: normal;
+        }
+
+        /* Lời chúc mừng năm mới */
+        #message {
+            display: none; /* Ẩn mặc định */
+            font-size: 4rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            /* Hiệu ứng màu vàng kim sáng hơn */
+            /* Sử dụng các tông màu vàng nhạt, trắng ngà để tạo cảm giác sáng chói */
+            background: linear-gradient(to right, #FFD700, #FFFACD, #FFE4B5, #FFF8DC, #DAA520);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            /* Thêm bóng sáng xung quanh chữ */
+            filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.5));
+        }
+        
+        /* Hiệu ứng nhấp nháy thêm cho chữ */
+        .blink {
+            animation: blinker 1.5s infinite alternate;
+        }
+
+        @keyframes blinker {
+            0% {
+                opacity: 0.9;
+                text-shadow: 0 0 15px #FFD700, 0 0 30px #FFEB3B;
+                filter: brightness(1.2) drop-shadow(0 0 10px rgba(255, 215, 0, 0.5));
+            }
+            100% {
+                opacity: 1;
+                text-shadow: 0 0 25px #FFFACD, 0 0 50px #FFD700;
+                filter: brightness(1.5) drop-shadow(0 0 20px rgba(255, 215, 0, 0.8));
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Canvas để vẽ pháo hoa -->
+    <canvas id="fireworksCanvas"></canvas>
+
+    <!-- Nội dung chính -->
+    <div class="content">
+        <!-- Đồng hồ đếm ngược -->
+        <div id="countdown">
+            <div class="time-box"><div id="days">00</div><span>Ngày</span></div>
+            <div class="time-box"><div id="hours">00</div><span>Giờ</span></div>
+            <div class="time-box"><div id="minutes">00</div><span>Phút</span></div>
+            <div class="time-box"><div id="seconds">00</div><span>Giây</span></div>
+        </div>
+
+        <!-- Lời chúc mừng năm mới -->
+        <div id="message" class="blink">
+            Chúc Mừng Năm Mới!
+        </div>
+    </div>
+
+    <script>
+        // --- CẤU HÌNH ---
+        // Thời gian để bắt đầu bắn pháo hoa
+        // Đặt mặc định là 5s sau khi tải trang để test
+        const targetDate = new Date().getTime() + 5000; 
+        
+        // Thời gian bắn pháo hoa trước khi hiện lời chúc (15s)
+        const fireworksDuration = 15000; 
+
+        // --- BIẾN TRANG THÁI ---
+        let fireworksActive = false;
+        let showMessage = false;
+
+        // --- ĐẾM NGƯỢC ---
+        const countdownEl = document.getElementById('countdown');
+        const messageEl = document.getElementById('message');
+        const daysEl = document.getElementById('days');
+        const hoursEl = document.getElementById('hours');
+        const minutesEl = document.getElementById('minutes');
+        const secondsEl = document.getElementById('seconds');
+
+        // Hàm cập nhật đồng hồ đếm ngược mỗi giây
+        const timer = setInterval(() => {
+            const now = new Date().getTime();
+            const distance = targetDate - now;
+
+            // Tính toán ngày, giờ, phút, giây
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            // Hiển thị lên màn hình
+            daysEl.innerText = days < 10 ? '0' + days : days;
+            hoursEl.innerText = hours < 10 ? '0' + hours : hours;
+            minutesEl.innerText = minutes < 10 ? '0' + minutes : minutes;
+            secondsEl.innerText = seconds < 10 ? '0' + seconds : seconds;
+
+            // Khi đếm ngược kết thúc
+            if (distance < 0) {
+                clearInterval(timer);
+                countdownEl.style.display = 'none'; // Ẩn đồng hồ
+                startFireworksCallback(); // Bắt đầu bắn pháo hoa
+            }
+        }, 1000);
+
+
+        // --- LOGIC PHÁO HOA (CANVAS) ---
+        const canvas = document.getElementById('fireworksCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Điều chỉnh kích thước canvas theo màn hình
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        // Mảng chứa các hạt pháo hoa
+        let fireworks = [];
+        let particles = [];
+
+        // Hàm tạo màu tươi sáng (Gold, Red, Orange, Yellow, Pink, Cyan, Bright Green)
+        function randomColor() {
+            const hues = [
+                // {min: 0, max: 20},    // Red - Orange
+                {min: 30, max: 60},   // Gold - Yellow
+                {min: 0, max: 40},    // Red - Orange - Gold
+                {min: 300, max: 330}, // Pink - Magenta
+                {min: 160, max: 180}, // Cyan
+                {min: 100, max: 140}  // Bright Green
+            ];
+            const selectedHue = hues[Math.floor(Math.random() * hues.length)];
+            const hue = Math.floor(Math.random() * (selectedHue.max - selectedHue.min) + selectedHue.min);
+            const saturation = 100;
+            const lightness = Math.floor(Math.random() * 30 + 50); // 70% - 100% lightness (very bright)
+            return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+        }
+
+        // Helper to get just the hue for consistent coloring in objects
+        function randomHue() {
+           const hues = [
+                {min: 0, max: 40},    // Red - Orange - Gold
+                {min: 30, max: 60},   // Gold - Yellow
+                {min: 300, max: 330}, // Pink
+                {min: 160, max: 180}, // Cyan
+                {min: 80, max: 140}   // Green
+            ];
+            const selectedHue = hues[Math.floor(Math.random() * hues.length)];
+            return Math.floor(Math.random() * (selectedHue.max - selectedHue.min) + selectedHue.min);
+        }
+
+        // Dữ liệu hình dạng con ngựa (tọa độ tương đối)
+        // Đây là tập hợp các điểm để tạo hình con ngựa đơn giản
+        const horseShape = [
+            {x: 0, y: -20}, {x: 5, y: -20}, {x: 10, y: -15}, {x: 12, y: -10}, // Đầu
+            {x: 8, y: -5}, {x: 5, y: 0}, // Cổ
+            {x: 10, y: 0}, {x: 15, y: 0}, {x: 20, y: 0}, // Lưng
+            {x: -5, y: 0}, {x: -10, y: 0}, {x: -15, y: 0}, // Thân sau
+            {x: -18, y: -5}, {x: -20, y: -2}, // Đuôi
+            {x: -10, y: 10}, {x: -10, y: 20}, // Chân sau
+            {x: 10, y: 10}, {x: 10, y: 20} // Chân trước
+        ];
+
+        // Class Pháo hoa (viên đạn bay lên)
+        class Firework {
+            constructor(x, y, targetX, targetY) {
+                this.x = x;
+                this.y = y;
+                this.targetX = targetX;
+                this.targetY = targetY;
+                this.speed = 2; // Tốc độ bay lên
+                this.angle = Math.atan2(targetY - y, targetX - x);
+                this.velocity = {
+                    x: Math.cos(this.angle) * this.speed * 4, // Tăng tốc
+                    y: Math.sin(this.angle) * this.speed * 4
+                };
+                this.brightness = Math.random() * 50 + 50; // Độ sáng
+                this.targetRadius = 1;
+                this.exploded = false; // Trạng thái đã nổ hay chưa
+                
+                // Random loại pháo hoa
+                const types = ['single', 'multi', 'wide', 'horse', 'circle', 'layered'];
+                // Tăng tỉ lệ ra loại thường hơn là hình đặc biệt
+                this.type = types[Math.floor(Math.random() * types.length)];
+                
+                // Màu chủ đạo (dùng cho loại single)
+                this.hue = randomHue();
+            }
+
+            update(index) {
+                // Di chuyển pháo hoa
+                this.x += this.velocity.x;
+                this.y += this.velocity.y;
+
+                // Kiểm tra nếu đã đến đích
+                // (tính khoảng cách)
+                const distance = Math.hypot(this.x - this.targetX, this.y - this.targetY);
+
+                if (distance < 50) { // Nếu gần tới đích thì nổ
+                    createParticles(this.targetX, this.targetY, this.type, this.hue); // Tạo hạt nổ
+                    this.exploded = true;
+                    fireworks.splice(index, 1); // Xóa khỏi mảng
+                }
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 3, 0, Math.PI * 2);
+                ctx.fillStyle = `hsl(${this.hue}, 100%, 50%)`;
+                ctx.fill();
+            }
+        }
+
+        // Class Hạt pháo hoa (bung ra khi nổ)
+        class Particle {
+            constructor(x, y, color, velocity) {
+                this.x = x;
+                this.y = y;
+                this.color = color;
+                this.velocity = velocity;
+                this.alpha = 1; // Độ mờ dần
+                this.decay = Math.random() * 0.01 + 0.005; // Tốc độ mờ chậm hơn chút
+                this.gravity = 0.03 + Math.random() * 0.02; // Trọng lực nhẹ hơn để bay bổng
+                this.friction = 0.96; // Lực cản không khí
+                this.flicker = Math.random() < 0.5; // 50% cơ hội nhấp nháy
+            }
+
+            update(index) {
+                this.velocity.x *= this.friction; // Áp dụng lực cản
+                this.velocity.y *= this.friction;
+                this.velocity.y += this.gravity; // Áp dụng trọng lực
+                this.x += this.velocity.x;
+                this.y += this.velocity.y;
+                this.alpha -= this.decay; // Mờ dần
+
+                // Hiệu ứng nhấp nháy
+                if (this.flicker) {
+                    this.alpha = this.alpha + (Math.random() - 0.5) * 0.1;
+                    if (this.alpha > 1) this.alpha = 1;
+                    if (this.alpha < 0) this.alpha = 0;
+                }
+
+                // Xóa hạt nếu đã quá mờ
+                if (this.alpha <= 0) {
+                    particles.splice(index, 1);
+                }
+            }
+
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.alpha;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 2, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        // Hàm tạo hạt nổ (explosion)
+        function createParticles(x, y, type, hue) {
+            let particleCount = 150; // Tăng số lượng hạt
+             
+            // Hàm helper tạo màu từ hue với độ sáng random
+            const getColor = (h) => `hsl(${h}, 100%, ${70 + Math.random() * 30}%)`;
+            
+            if (type === 'horse') {
+                // Tạo hình con ngựa
+                const scale = 2; // Độ lớn của hình
+                horseShape.forEach(point => {
+                    // Tạo nhiều hạt cho mỗi điểm để hình rõ hơn
+                    for(let i=0; i<3; i++) {
+                        const offsetX = (point.x * scale) + (Math.random() - 0.5) * 5;
+                        const offsetY = (point.y * scale) + (Math.random() - 0.5) * 5;
+                        const color = getColor(hue);
+                        
+                        // Vận tốc bung nhẹ để giữ hình
+                        const velocity = {
+                            x: (Math.random() - 0.5) * 2,
+                            y: (Math.random() - 0.5) * 2
+                        };
+                        particles.push(new Particle(x + offsetX, y + offsetY, color, velocity));
+                    }
+                });
+            } else if (type === 'circle') {
+                // Hình tròn lan tỏa đều
+                particleCount = 100;
+                const angleIncrement = (Math.PI * 2) / particleCount;
+                const speed = 4; // Tốc độ cố định để tạo vòng tròn
+                const color = getColor(hue);
+
+                for (let i = 0; i < particleCount; i++) {
+                    const angle = angleIncrement * i;
+                    const velocity = {
+                        x: Math.cos(angle) * speed,
+                        y: Math.sin(angle) * speed
+                    };
+                    particles.push(new Particle(x, y, color, velocity));
+                }
+
+            } else if (type === 'layered') {
+                // Pháo hoa chùm nhiều lớp (3 lớp)
+                const layers = 3;
+                const baseSpeed = 2;
+                
+                for (let l = 1; l <= layers; l++) {
+                    const layerParticleCount = 50 * l; // Lớp ngoài nhiều hạt hơn
+                    const layerColor = randomColor(); // Mỗi lớp 1 màu tươi sáng
+                    const layerSpeed = baseSpeed * l; // Lớp ngoài bay nhanh hơn
+
+                    for (let i = 0; i < layerParticleCount; i++) {
+                        const angle = Math.random() * Math.PI * 2;
+                        const velocity = {
+                            x: Math.cos(angle) * layerSpeed,
+                            y: Math.sin(angle) * layerSpeed
+                        };
+                        particles.push(new Particle(x, y, layerColor, velocity));
+                    }
+                }
+
+            } else {
+                // Các loại nổ thông thường
+                if (type === 'wide') particleCount = 200; // Nổ rộng nhiều hạt hơn
+
+                for (let i = 0; i < particleCount; i++) {
+                    let color;
+                    if (type === 'single') {
+                        color = getColor(hue); // 1 màu chủ đạo
+                    } else if (type === 'multi' || type === 'wide') {
+                        color = randomColor(); // Nhiều màu tươi sáng
+                    }
+
+                    // Vận tốc
+                    const angle = Math.random() * Math.PI * 2;
+                    let speed = Math.random() * 5 + 1;
+                    
+                    if (type === 'wide') {
+                        speed = Math.random() * 10 + 2; // Tốc độ cao hơn để lan rộng
+                    }
+
+                    const velocity = {
+                        x: Math.cos(angle) * speed,
+                        y: Math.sin(angle) * speed
+                    };
+
+                    particles.push(new Particle(x, y, color, velocity));
+                }
+            }
+        }
+
+        // Vòng lặp Animation chính
+        function animate() {
+            if (!fireworksActive && particles.length === 0 && fireworks.length === 0) return;
+
+            requestAnimationFrame(animate);
+            
+            // Làm mờ nền canvas để tạo hiệu ứng đuôi pháo hoa (trail effect)
+            ctx.globalCompositeOperation = 'source-over';
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Chế độ hòa trộn cộng màu để tạo độ sáng rực rỡ
+            ctx.globalCompositeOperation = 'lighter';
+
+            // Cập nhật và vẽ pháo hoa bay lên
+            fireworks.forEach((firework, index) => {
+                firework.update(index);
+                firework.draw();
+            });
+
+            // Cập nhật và vẽ hạt nổ
+            particles.forEach((particle, index) => {
+                particle.update(index);
+                particle.draw();
+            });
+
+            // Random bắn thêm pháo hoa nếu đang active
+            if (fireworksActive && Math.random() < 0.05) { // Tỉ lệ bắn
+                const x = Math.random() * canvas.width;
+                const y = canvas.height;
+                const targetX = Math.random() * canvas.width;
+                const targetY = Math.random() * (canvas.height / 2); // Nổ ở nửa trên
+                fireworks.push(new Firework(x, y, targetX, targetY));
+            }
+        }
+
+        // --- HÀM ĐIỀU KHIỂN LUỒNG CHƯƠNG TRÌNH ---
+        
+        function startFireworksCallback() {
+            fireworksActive = true;
+            animate(); // Bắt đầu vòng lặp vẽ canvas
+
+            // Sau khoảng thời gian định trước (15s), hiện lời chúc
+            setTimeout(() => {
+                showSuccessMessage();
+            }, fireworksDuration);
+        }
+
+        function showSuccessMessage() {
+            // Có thể dừng bắn pháo hoa từ từ hoặc cứ để bắn tiếp
+            // Ở đây mình giảm tần suất hoặc để nó tự nhiên
+            // fireworksActive = false; // Nếu muốn dừng bắn pháo hoa thì bỏ comment dòng này
+
+            messageEl.style.display = 'block'; // Hiện lời chúc
+        }
+
+    </script>
+</body>
+</html>
